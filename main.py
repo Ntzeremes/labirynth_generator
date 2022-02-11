@@ -113,7 +113,7 @@ class Labyrinth:
         self.screen = screen
         self.block = block
 
-    def path(self, length):
+    def path(self):
         """This function generates a random path inside the grid.
         The path starts at a random point at the edge of a grid and has fixed length"""
 
@@ -135,11 +135,8 @@ class Labyrinth:
         while current_node:
             self.insert(current_node)
             current_node = current_node.child(self)
-            if current_node is None:
-                print("No node")
-                break
 
-            yield self.grid
+            yield None
 
 
 def visualize_path_creation(labyrinth, screen_size):
@@ -157,13 +154,13 @@ def visualize_path_creation(labyrinth, screen_size):
         pygame.draw.line(screen, (0, 0, 0), (0, (i + 1)*block), (screen_size[0], (i + 1)*block))
 
     labyrinth.set_visual_p(screen, block)
-    path = labyrinth.path(40)
+    path = labyrinth.path()
 
     pygame.display.flip()
     clock = pygame.time.Clock()
 
     while not terminate:
-        clock.tick(5)
+        clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate = True
