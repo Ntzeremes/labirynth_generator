@@ -1,5 +1,7 @@
 import random
 import pygame
+import copy
+import time
 
 pygame.init()
 
@@ -40,15 +42,14 @@ class Node:
             if labyrinth.grid[self.pos_x + 1][self.pos_y] is None:
                 neighbors.append((self.pos_x + 1, self.pos_y))
 
-        checked = neighbors[:]
-
+        checked = copy.deepcopy(neighbors)
         for neighbor in neighbors:
             n = 0
             for i in range(2):
                 for j in range(2):
-                    x = self.pos_x + i * (-1) ** j
-                    y = self.pos_y + (1 - i) * (-1) ** j
-                    if 0 < x < labyrinth.size and 0 < y < labyrinth.size:
+                    x = neighbor[0] + i * (-1) ** j
+                    y = neighbor[1] + (1 - i) * (-1) ** j
+                    if 0 <= x < labyrinth.size and 0 <= y < labyrinth.size:
                         if labyrinth.grid[x][y] is not None:
                             n += 1
             if n > 1:
@@ -57,21 +58,24 @@ class Node:
         return checked
 
     def child(self, lab):
+        """choosing the child node of the current node"""
         neighbors = self.neighbors(lab)
 
         if not neighbors:
             return None
+        print(neighbors)
 
         # Giving the same direction coming from parent a higher chance
         if self.parent:
             direction = [-self.parent[0] + self.pos_x, -self.parent[1] + self.pos_y]
 
             i = random.random()
-            # keep parent's direction,it has a slightly higher chance
+            # keep parent's direction,it has a higher chance
             parents_direction_node = (self.pos_x + direction[0], self.pos_y + direction[1])
             if parents_direction_node in neighbors:
-                if i < 0.7:
+                if len(neighbors) == 1 or i < 0.6:
                     return Node((self.pos_x, self.pos_y), parents_direction_node, self.grid_size)
+                # else choose randomly between the other neighbors
                 else:
                     neighbors.remove(parents_direction_node)
                     return Node((self.pos_x, self.pos_y), random.choice(neighbors), self.grid_size)
@@ -82,8 +86,9 @@ class Node:
 
 
 class Labyrinth:
-    """The class tha created the sizexsize grid of the labyrinth. Initially it is filled with None values, the path
-    is represented by values 0. Also has some basic functions for extra utility and manipulation."""
+    """The class that creates the n x n grid of the labyrinth. Initially it is filled with None values, the path
+    is represented by values 0. Also has some basic functions for extra utility and manipulation and the function that
+    creates the path."""
 
     def __init__(self, size):
         self.grid = [[None for _ in range(size)] for _ in range(size)]
@@ -93,9 +98,11 @@ class Labyrinth:
 
     # noinspection PyTypeChecker
     def insert(self, node):
+        """inserts a node in grid and prints it"""
         self.grid[node.pos_x][node.pos_y] = 0
-        pygame.draw.rect(self.screen, (150, 150, 150), (node.pos_x * self.block, node.pos_y * self.block, self.block - 1,
-                                                        self.block - 1))
+        if self.screen:
+            pygame.draw.rect(self.screen, (150, 150, 150),
+                             (node.pos_x * self.block + 1, node.pos_y * self.block + 1, self.block - 1, self.block - 1))
 
     def print_grid(self):
         for i in range(self.size):
@@ -125,15 +132,12 @@ class Labyrinth:
 
         current_node = Node(None, start, self.size)
 
-        current_length = 0
-
-        while current_length <= length:
+        while current_node:
             self.insert(current_node)
             current_node = current_node.child(self)
             if current_node is None:
                 print("No node")
                 break
-            current_length += 1
 
             yield self.grid
 
@@ -153,13 +157,13 @@ def visualize_path_creation(labyrinth, screen_size):
         pygame.draw.line(screen, (0, 0, 0), (0, (i + 1)*block), (screen_size[0], (i + 1)*block))
 
     labyrinth.set_visual_p(screen, block)
-    path = labyrinth.path(30)
+    path = labyrinth.path(40)
 
     pygame.display.flip()
     clock = pygame.time.Clock()
 
     while not terminate:
-        clock.tick(3)
+        clock.tick(5)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate = True
@@ -172,5 +176,5 @@ def visualize_path_creation(labyrinth, screen_size):
         pygame.display.flip()
 
 
-lab = Labyrinth(40)
+lab = Labyrinth(20)
 visualize_path_creation(lab, (800, 800))
