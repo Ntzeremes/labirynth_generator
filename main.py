@@ -10,11 +10,21 @@ class Node:
     """A node is a part of the path. Each node is connected with the previous one, called parent.
     All the nodes connected create the path"""
 
-    def __init__(self, parent, pos, grid_size):
+    def __init__(self, parent, pos):
         self.parent = parent
         self.pos_x = pos[0]
         self.pos_y = pos[1]
-        self.grid_size = grid_size
+
+    def can_insert(self, labyrinth):
+        n = 0
+        for i in range(2):
+            for j in range(2):
+                x = self.pos_x + i * (-1) ** j
+                y = self.pos_y + (1 - i) * (-1) ** j
+                if 0 <= x < labyrinth.size and 0 <= y < labyrinth.size:
+                    if labyrinth.grid[x][y] is not None:
+                        n += 1
+        return False if n > 1 else True
 
     def neighbors(self, labyrinth):
         """checking the grid positions on the top, bottom, left and right of the Node.
@@ -30,7 +40,7 @@ class Node:
             if labyrinth.grid[self.pos_x][self.pos_y - 1] is None:
                 neighbors.append((self.pos_x, self.pos_y - 1))
         # bottom
-        if self.pos_y + 1 < self.grid_size:
+        if self.pos_y + 1 < labyrinth.size:
             if labyrinth.grid[self.pos_x][self.pos_y + 1] is None:
                 neighbors.append((self.pos_x, self.pos_y + 1))
         # left
@@ -38,7 +48,7 @@ class Node:
             if labyrinth.grid[self.pos_x - 1][self.pos_y] is None:
                 neighbors.append((self.pos_x - 1, self.pos_y))
         # right
-        if self.pos_x + 1 < self.grid_size:
+        if self.pos_x + 1 < labyrinth.size:
             if labyrinth.grid[self.pos_x + 1][self.pos_y] is None:
                 neighbors.append((self.pos_x + 1, self.pos_y))
 
@@ -57,14 +67,13 @@ class Node:
 
         return checked
 
-    def child(self, lab):
+    def children(self, lab):
         """choosing the child node of the current node"""
         neighbors = self.neighbors(lab)
 
         if not neighbors:
             return None
-        print(neighbors)
-
+        second_child = None
         # Giving the same direction coming from parent a higher chance
         if self.parent:
             direction = [-self.parent[0] + self.pos_x, -self.parent[1] + self.pos_y]
@@ -74,15 +83,30 @@ class Node:
             parents_direction_node = (self.pos_x + direction[0], self.pos_y + direction[1])
             if parents_direction_node in neighbors:
                 if len(neighbors) == 1 or i < 0.6:
-                    return Node((self.pos_x, self.pos_y), parents_direction_node, self.grid_size)
+                    first_child = Node((self.pos_x, self.pos_y), parents_direction_node)
                 # else choose randomly between the other neighbors
                 else:
                     neighbors.remove(parents_direction_node)
-                    return Node((self.pos_x, self.pos_y), random.choice(neighbors), self.grid_size)
+                    first_child = Node((self.pos_x, self.pos_y), random.choice(neighbors))
             else:
-                return Node((self.pos_x, self.pos_y), random.choice(neighbors), self.grid_size)
+                first_child = Node((self.pos_x, self.pos_y), random.choice(neighbors))
         else:
-            return Node((self.pos_x, self.pos_y), random.choice(neighbors), self.grid_size)
+            first_child = Node((self.pos_x, self.pos_y), random.choice(neighbors))
+
+        l = len(neighbors)
+
+        if l == 0:
+            return None
+        elif len(neighbors) > 1:
+            propagate = random.random()
+            if propagate < 0.15:
+                neighbors.remove((first_child.pos_x, first_child.pos_y))
+                second_child = Node((self.pos_x, self.pos_y), random.choice(neighbors))
+
+        if second_child:
+            return [first_child, second_child]
+
+        return [first_child]
 
 
 class Labyrinth:
@@ -130,31 +154,36 @@ class Labyrinth:
         else:
             start = (position, self.size - 1)
 
-        current_node = Node(None, start, self.size)
+        current_nodes = [Node(None, start)]
 
-        while current_node:
-            self.insert(current_node)
-            current_node = current_node.child(self)
+        while current_nodes:
+            current_node = current_nodes.pop(0)
+            if current_node.can_insert(self):
+                self.insert(current_node)
+            children = current_node.children(self)
+            if children:
+                current_nodes.extend(children)
 
             yield None
 
 
-def visualize_path_creation(labyrinth, screen_size):
+def visualize_path_creation(screen_size):
     """It is a helper function that visualizes the creation of the path.
     Created to check the process for bugs."""
 
     screen = pygame.display.set_mode(screen_size)
     screen.fill((50, 50, 50))
     terminate = False
+    lab = Labyrinth(20)
 
     # creating the grid
-    block = screen_size[0]//labyrinth.size
-    for i in range(labyrinth.size - 1):
-        pygame.draw.line(screen, (0, 0, 0), ((i + 1)*block, 0), ((i + 1)*block, screen_size[0]))
-        pygame.draw.line(screen, (0, 0, 0), (0, (i + 1)*block), (screen_size[0], (i + 1)*block))
+    block = screen_size[0] // lab.size
+    for i in range(lab.size - 1):
+        pygame.draw.line(screen, (0, 0, 0), ((i + 1) * block, 0), ((i + 1) * block, screen_size[0]))
+        pygame.draw.line(screen, (0, 0, 0), (0, (i + 1) * block), (screen_size[0], (i + 1) * block))
 
-    labyrinth.set_visual_p(screen, block)
-    path = labyrinth.path()
+    lab.set_visual_p(screen, block)
+    path = lab.path()
 
     pygame.display.flip()
     clock = pygame.time.Clock()
@@ -168,10 +197,9 @@ def visualize_path_creation(labyrinth, screen_size):
         try:
             next(path)
         except StopIteration:
-            pass
+            print("Labyrinth ready")
 
         pygame.display.flip()
 
 
-lab = Labyrinth(20)
-visualize_path_creation(lab, (800, 800))
+visualize_path_creation((800, 800))
