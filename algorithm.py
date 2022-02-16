@@ -1,14 +1,14 @@
+""""Has the classes that are used to create the labyrinth inside the grid
+The function path inside the labyrinth class is the one that starts end generates the labyrinth
+inside the grid"""
+
 import random
 import pygame
-import copy
-import time
-
-pygame.init()
 
 
 class Node:
     """A node is a part of the path. Each node is connected with the previous one, called parent.
-    All the nodes connected create the path"""
+    All the nodes connected create the path. Many paths ,like branched of a tree create the labyrinth"""
 
     propagate_chance = 0.5
     parents_direction = 0.65
@@ -19,6 +19,8 @@ class Node:
         self.pos_y = pos[1]
 
     def can_insert(self, width, height, grid):
+        """Checking if the Node can enter the grid. In order for it to enter it must have only 1 neighbor, it's parent.
+        If it had more than, we wouldn't have a tree like structure labyrinth, because the branches would intermingle."""
         n = 0
         for i in range(2):
             for j in range(2):
@@ -96,7 +98,10 @@ class Node:
         return neighbors
 
     def children(self, lab):
-        """choosing the child node of the current node"""
+        """choosing the child node of the current node.
+        If the node has a parent, then there is a higher chance that the child will follow the direction of the parent.
+        This is done to create somewhat straight paths.
+        There is also a small chance that the node will have a second child, that will create a new branch."""
         neighbors = self.neighbors(lab)
 
         if not neighbors:
@@ -159,6 +164,7 @@ class Labyrinth:
             pygame.display.flip()
 
     def reset(self):
+        """resets the grid of labyrinth"""
         self.grid = [[None for _ in range(self.width)] for _ in range(self.height)]
 
     def print_grid(self):
@@ -167,14 +173,14 @@ class Labyrinth:
             print()
 
     def set_visual_p(self, screen, block):
+        """passes the screen and block variables so that can be used from the class"""
         self.screen = screen
         self.block = block
 
     def path(self, x, y):
         """This function generates a random path inside the grid.
-        The path starts at a random point at the edge of a grid and has fixed length"""
+        The path starts at a x,y point in the grid """
 
-        # Choosing starting point at the edge of the grid. Corners are excluded
         current_nodes = [Node(None, (x, y))]
         self.insert(current_nodes[0].pos_x, current_nodes[0].pos_y)
         while current_nodes:
@@ -194,51 +200,5 @@ class Labyrinth:
                 current_nodes.extend(children)
 
 
-def create_labyrinth(width, height):
-    """Initializes and visualizes the creation of the path.
-    """
-    screen_width = 900
-    screen_height = 600
-    screen = pygame.display.set_mode((screen_width, screen_height))
-    screen.fill((50, 50, 50))
-    terminate = False
-    lab = Labyrinth(width, height)
 
-    # creating the grid
-    block = screen_width // width
-    for i in range(height - 1):
-        pygame.draw.line(screen, (0, 0, 0), (0, (i + 1) * block), (screen_width, (i + 1) * block))
-    for j in range(width - 1):
-        pygame.draw.line(screen, (0, 0, 0), ((j + 1) * block, 0), ((j + 1) * block, screen_height))
-
-    lab.set_visual_p(screen, block)
-
-    pygame.display.flip()
-    clock = pygame.time.Clock()
-
-    while not terminate:
-        clock.tick(60)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate = True
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x = int((event.pos[0]) // block)
-                y = int((event.pos[1]) // block)
-                lab.path(x, y)
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    lab.reset()
-                    screen.fill((50, 50, 50))
-                    for i in range(height - 1):
-                        pygame.draw.line(screen, (0, 0, 0), (0, (i + 1) * block), (screen_width, (i + 1) * block))
-                    for j in range(width - 1):
-                        pygame.draw.line(screen, (0, 0, 0), ((j + 1) * block, 0), ((j + 1) * block, screen_height))
-                    pygame.display.flip()
-
-            pygame.display.flip()
-
-
-create_labyrinth(30, 20)
 
