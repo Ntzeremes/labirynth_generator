@@ -99,8 +99,8 @@ class Node:
 
     def children(self, lab):
         """choosing the child node of the current node.
-        If the node has a parent, then there is a higher chance that the child will follow the direction of the parent.
-        This is done to create somewhat straight paths.
+        If the parent node has a parent itself, then there is a higher chance that the child will follow the direction
+        of the parent. This is done to create somewhat straight paths.
         There is also a small chance that the node will have a second child, that will create a new branch."""
         neighbors = self.neighbors(lab)
 
@@ -144,7 +144,7 @@ class Node:
 
 class Labyrinth:
     """The class that creates the n x n grid of the labyrinth. Initially it is filled with None values, the path
-    is represented by values 0. Also has some basic functions for extra utility and manipulation and the function that
+    is represented by values 0. Also has some basic functions for extra utility - manipulation and the function that
     creates the path."""
 
     def __init__(self, width, height):
@@ -153,14 +153,15 @@ class Labyrinth:
         self.height = height
         self.screen = None
         self.block = None
+        self.pad = None
 
     # noinspection PyTypeChecker
     def insert(self, x, y):
         """inserts a node in grid and prints it"""
         self.grid[y][x] = 0
         if self.screen:
-            pygame.draw.rect(self.screen, (150, 150, 150),
-                             (x * self.block + 1, y * self.block + 1, self.block - 1, self.block - 1))
+            pygame.draw.rect(self.screen, (175, 175, 175),
+                             (x * self.block + 1, y * self.block + 1 + self.pad, self.block - 1, self.block - 1))
             pygame.display.flip()
 
     def reset(self):
@@ -172,10 +173,11 @@ class Labyrinth:
             print(self.grid[i])
             print()
 
-    def set_visual_p(self, screen, block):
+    def set_visual_p(self, screen, block, pad):
         """passes the screen and block variables so that can be used from the class"""
         self.screen = screen
         self.block = block
+        self.pad = pad
 
     def path(self, x, y):
         """This function generates a random path inside the grid.

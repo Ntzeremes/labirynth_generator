@@ -25,16 +25,31 @@ class Button:
         self.text_rect = self.text_surf.get_rect(center=self.top_rect.center)
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.top_color, self.
+        pygame.draw.rect(screen, self.top_color, self.top_rect)
+        screen.blit(self.text_surf, self.text_rect)
+
+    def check_click(self):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.top_rect.collidepoint(*mouse_pos):
+            if pygame.mouse.get_pressed()[0]:
+                self.pressed = True
+            else:
+                if self.pressed:
+                    self.pressed = False
+                    return True
+        return False
 
 
 def starting_gui(screen, font):
     page = 1
 
-    if page ==1:
+    if page == 1:
+        screen.fill((0,0,0))
         grid_choices = {0: (9, 6), 1: (12, 8), 2: (30, 20), 3: (60, 40)}
         text = "The labyrinth has a 3:2  width to height ratio." \
                "Chose labyrinth size."
+
+        info = Text()
 
         page = 2
 
