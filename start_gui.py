@@ -2,16 +2,18 @@ import pygame
 
 
 class Text:
-    """Class that renders text on the screen"""
     def __init__(self, font, pos, width, height, text):
         self.font = font
         self.top_rect = pygame.Rect(pos, (width, height))
         self.top_color = (255, 255, 255)
         self.text = text
 
-    def draw(self):
-        self.text_surf = self.font.render(self.text, True, (0, 0, 0))
+        self.text_surf = font.render(text, True, (255, 255, 255))
         self.text_rect = self.text_surf.get_rect(center=self.top_rect.center)
+
+    def draw(self, screen):
+        self.text_surf = self.font.render(self.text, True, (255, 255, 255))
+        screen.blit(self.text_surf, self.text_rect)
 
 
 class Button:
@@ -40,19 +42,38 @@ class Button:
         return False
 
 
-def starting_gui(screen, font):
+def starting_gui(screen, font, width, top_pad, right_pad):
+    terminate = False
+    screen.fill((0, 0, 0))
     page = 1
+    while not terminate:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate = True
 
-    if page == 1:
-        screen.fill((0,0,0))
-        grid_choices = {0: (9, 6), 1: (12, 8), 2: (30, 20), 3: (60, 40)}
-        text = "The labyrinth has a 3:2  width to height ratio." \
-               "Chose labyrinth size."
+        if page == 1:
 
-        info = Text()
+            grid_choices = {0: [None, "9 x 6"], 1: [None, "15 x 12"], 2: [None, "30 x 20"], 3: [None, "60 x 40"]}
+            text = "The labyrinth has a 3:2  width to height ratio."
+            textb = "Choose a grid size."
+            page_text = Text(font, (500, 50), width - right_pad, 40, text)
+            page_textb = Text(font, (500, 100), width - right_pad, 40, textb)
+            page_text.draw(screen)
+            page_textb.draw(screen)
 
-        page = 2
+            buttons = False
+            button_h = 90
 
-    else:
+            if not buttons:
+                for i in range(len(grid_choices)):
+                    grid_choices[i][0] = Button(grid_choices[i][1], 200, 50, (400, 210 + i * button_h), font)
 
-        return True
+            for i in range(len(grid_choices)):
+                grid_choices[i][0].draw(screen)
+
+            pygame.display.flip()
+
+        else:
+            screen.fill((0, 0, 0))
+
+
