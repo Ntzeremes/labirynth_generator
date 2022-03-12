@@ -1,20 +1,8 @@
 import pygame
 from algorithm import *
-from start_gui import starting_gui
+from guis import *
 
 pygame.init()
-
-
-def create_grid(screen, screen_width,screen_height, width, height, pad):
-    """ Creates the height x width  grid of the labyrinth.
-    Used when we start the program and every time we reset the labyrinth"""
-    screen.fill((80, 80, 80))
-    block = screen_width // width
-    pygame.draw.line(screen, (0, 0, 0), (0, pad), (screen_width, pad))
-    for i in range(height - 1):
-        pygame.draw.line(screen, (0, 0, 0), (0, (i + 1) * block + pad), (screen_width, (i + 1) * block + pad))
-    for j in range(width):
-        pygame.draw.line(screen, (0, 0, 0), ((j + 1) * block, pad), ((j + 1) * block, screen_height + pad))
 
 
 def main():
@@ -28,16 +16,21 @@ def main():
     screen_height = 600
     screen = pygame.display.set_mode((screen_width + right_pad, screen_height + top_pad))
     pygame.display.set_caption("Labyrinth Generator")
-    terminate = False
-    pygame.font.init()
-    font = pygame.font.SysFont("arial", 40)
-    lab, width, height,block = None, None, None,None
-    pygame.display.flip()
     clock = pygame.time.Clock()
+    pygame.font.init()
+
+    # Initialize font and labyrinth text info
+    start_font = pygame.font.SysFont("arial", 40)
+    lab_font = pygame.font.SysFont("sanscomic", 40)
+    lab, width, height, block = None, None, None, None
+    text_collection = lab_gui(lab_font, screen_width, screen_height, top_pad, right_pad,
+                              Node.same_direction, Node.propagate_chance)
+    terminate = False
+
     start_settings = False
     while not terminate:
         clock.tick(60)
-
+        text_collection.draw(screen)
         if start_settings:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -46,26 +39,34 @@ def main():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x = int((event.pos[0]) // block)
                     y = int((event.pos[1] - top_pad) // block)
-                    lab.path(x, y)
+                    if 0 <= x < width and 0 <= y < height:
+                        print(x, y)
+                        lab.path(x, y)
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         lab.reset()
-                        create_grid(screen, screen_width, screen_height, width, height, top_pad)
+                        draw_grid(screen, screen_width, screen_height, width, height, top_pad)
                         pygame.display.flip()
 
+        # Gui to choose the grid size, at the start of the program or when reset
         if not start_settings:
-            grid_choice = starting_gui(screen, font, screen_width, top_pad, right_pad)
+            grid_choice = starting_gui(screen, start_font, screen_width, top_pad, right_pad)  # looping till we choose
+
+            # If we decided to close the settings we get no choice , so we need an if clause to check this
             if grid_choice:
-                width , height = grid_choice[0], grid_choice[1]
-                create_grid(screen, screen_width, screen_height, width, height, top_pad)
+                width, height = grid_choice[0], grid_choice[1]
+                screen.fill((80, 80, 80))
                 lab = Labyrinth(width, height)
                 block = screen_width // width
                 lab.set_visual_p(screen, block, top_pad)
+                draw_grid(screen, screen_width, screen_height, width, height, top_pad)
                 pygame.display.flip()
                 start_settings = True
             else:
                 terminate = True
+
+        pygame.display.flip()
 
 
 if __name__ == "__main__":

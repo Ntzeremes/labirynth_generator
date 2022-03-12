@@ -11,7 +11,7 @@ class Node:
     All the nodes connected create the path. Many paths ,like branched of a tree create the labyrinth"""
 
     propagate_chance = 0.5
-    parents_direction = 0.65
+    same_direction = 0.65
 
     def __init__(self, parent, pos):
         self.parent = parent
@@ -37,8 +37,9 @@ class Node:
 
         neighbors = []
 
-        # Adding neighbors that are on top, bottom , right and left in the labyrinth
-        # and we have not visited them so far.
+        # Adding neighbors that are on top, bottom , right and left in the labyrinth that we haven't visited so far.
+        # Checking if each neighbor has other neighbors apart from the parent node.
+        # We don't want them to have other nodes around cause the paths will intermingle otherwise.
 
         # top
         if self.pos_y - 1 >= 0:
@@ -101,7 +102,7 @@ class Node:
         """choosing the child node of the current node.
         If the parent node has a parent itself, then there is a higher chance that the child will follow the direction
         of the parent. This is done to create somewhat straight paths.
-        There is also a small chance that the node will have a second child, that will create a new branch."""
+        There is also a small chance that the node will have a second child, that will create a new branch-path."""
         neighbors = self.neighbors(lab)
 
         if not neighbors:
@@ -115,24 +116,28 @@ class Node:
             # keep parent's direction,it has a higher chance
             parents_direction_node = (2 * self.pos_x - self.parent[0], 2 * self.pos_y - self.parent[1])
             if parents_direction_node in neighbors:
-                if len(neighbors) == 1 or i < Node.parents_direction:
+                # keep direction randomly or if only one neighbor
+                if len(neighbors) == 1 or i < Node.same_direction:
                     first_child = Node((self.pos_x, self.pos_y), parents_direction_node)
-                # else choose randomly between the other neighbors
+                # else choose randomly between the other neighbors excluding the parent_direction node
                 else:
                     neighbors.remove(parents_direction_node)
                     first_child = Node((self.pos_x, self.pos_y), random.choice(neighbors))
+            # if there is no node in parent direction chose randomly
             else:
                 first_child = Node((self.pos_x, self.pos_y), random.choice(neighbors))
         else:
+            # if no parent, i case of starting the labyrinth, choose randomly from the neighbors
             first_child = Node((self.pos_x, self.pos_y), random.choice(neighbors))
 
         l = len(neighbors)
 
+        # Chance to create a new branch
         if l == 0:
             return None
         elif l > 1:
             propagate = random.random()
-            if propagate < Node.propagate_chance :
+            if propagate < Node.propagate_chance:
                 neighbors.remove((first_child.pos_x, first_child.pos_y))
                 second_child = Node((self.pos_x, self.pos_y), random.choice(neighbors))
 
