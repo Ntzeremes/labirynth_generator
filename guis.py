@@ -65,6 +65,19 @@ class Button:
         return False
 
 
+class Button_collection:
+    def __init__(self, buttons):
+        self.buttons = buttons
+
+    def draw(self, screen):
+        for button in self.buttons:
+            button.draw(screen)
+
+    def ckeck_click(self):
+        for button in self.buttons:
+            button.check_click()
+
+
 # noinspection PyUnresolvedReferences
 def starting_gui(screen, font, width, top_pad, right_pad):
     """Created the starting screen from which the user will choose the size of the labyrinth.
@@ -105,16 +118,23 @@ def starting_gui(screen, font, width, top_pad, right_pad):
 
 
 def lab_gui(font, width, height, top_pad, right_pad, d, p):
+    button_font = lab_font = pygame.font.SysFont("sanscomic", 55)
     horizontal_text = "space: restart labyrinth     R : reset the grid size"
     h_text = Text(font, (0, 0), width - 2 * right_pad, 50, horizontal_text, (0, 0, 0), (80, 80, 80))
 
+    # d text and buttons
     vertical_text1 = f" d:{d}"
-    v_text1 = Changing_Text(font, (width + 1, 2 * top_pad), right_pad, 2 * top_pad, vertical_text1, (0, 0, 0), (80, 80, 80))
+    v_text1 = Changing_Text(font, (width + 1, 2 * top_pad), right_pad, top_pad, vertical_text1, (0, 0, 0), (80, 80, 80))
+    d_plus = Button("+", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 2 * top_pad - 50), button_font)
+    d_minus = Button("-", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 3 * top_pad + 5), button_font)
+
+    # p text and buttons
     vertical_text2 = f" p:{p}"
     v_text2 = Changing_Text(font, (width + 1, 7 * top_pad), right_pad, 2 * top_pad, vertical_text2, (0, 0, 0), (80, 80, 80))
 
+    buttons = Button_collection([d_plus,d_minus])
     collection = Text_Collection([h_text, v_text1, v_text2])
-    return collection
+    return collection, buttons
 
 
 def draw_grid(screen, screen_width, screen_height, width, height, top_pad):

@@ -23,7 +23,7 @@ def main():
     start_font = pygame.font.SysFont("arial", 40)
     lab_font = pygame.font.SysFont("sanscomic", 40)
     lab, width, height, block = None, None, None, None
-    text_collection = lab_gui(lab_font, screen_width, screen_height, top_pad, right_pad,
+    text_collection, buttons = lab_gui(lab_font, screen_width, screen_height, top_pad, right_pad,
                               Node.same_direction, Node.propagate_chance)
     terminate = False
 
@@ -31,6 +31,7 @@ def main():
     while not terminate:
         clock.tick(60)
         text_collection.draw(screen)
+        buttons.draw(screen)
         if start_settings:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -40,7 +41,6 @@ def main():
                     x = int((event.pos[0]) // block)
                     y = int((event.pos[1] - top_pad) // block)
                     if 0 <= x < width and 0 <= y < height:
-                        print(x, y)
                         lab.path(x, y)
 
                 if event.type == pygame.KEYDOWN:
