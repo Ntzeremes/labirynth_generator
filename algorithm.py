@@ -195,7 +195,7 @@ class Labyrinth:
         self.grid[y][x] = 0
         if self.screen:
             pygame.draw.rect(self.screen, (175, 175, 175),
-                             (x * self.block + 1, y * self.block + 1 + self.pad, self.block - 1, self.block - 1))
+                             (x * self.block + 2, y * self.block + 2 + self.pad, self.block - 2, self.block - 2))
             pygame.display.flip()
 
     def reset(self):

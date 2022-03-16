@@ -1,3 +1,4 @@
+import csv
 import pygame
 from algorithm import Node
 
@@ -84,13 +85,17 @@ class Image_Button:
     def draw(self, screen):
         screen.blit(self.image, (self.x, self.y))
 
-    def check_click(self):
+    def check_click(self, grid=None):
         mouse_pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(*mouse_pos):
             if pygame.mouse.get_pressed()[0]:
                 self.pressed = True
             else:
                 if self.pressed:
+                    with open("labyrinth.txt", "w") as f:
+                        writer = csv.writer(f)
+                        writer.writerows(grid)
+
                     self.pressed = False
                     return True
         else:
@@ -157,7 +162,7 @@ def lab_gui(font, width, height, top_pad, right_pad, d, p):
 
     # d text and buttons
     vertical_text1 = f"d:{d}"
-    v_text1 = Changing_Text(font, (width + 1, 2 * top_pad), right_pad, top_pad, vertical_text1, (0, 0, 0), (80, 80, 80))
+    v_text1 = Changing_Text(font, (width + 2, 2 * top_pad), right_pad, top_pad, vertical_text1, (0, 0, 0), (80, 80, 80))
     d_plus = Button("+", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 2 * top_pad - 50), button_font,
                     v_text1)
     d_minus = Button("-", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 3 * top_pad + 5), button_font,
@@ -165,7 +170,7 @@ def lab_gui(font, width, height, top_pad, right_pad, d, p):
 
     # p text and buttons
     vertical_text2 = f"p:{p}"
-    v_text2 = Changing_Text(font, (width + 1, 6 * top_pad), right_pad, top_pad, vertical_text2, (0, 0, 0), (80, 80, 80))
+    v_text2 = Changing_Text(font, (width + 2, 6 * top_pad), right_pad, top_pad, vertical_text2, (0, 0, 0), (80, 80, 80))
     p_plus = Button("+", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 6 * top_pad - 50), button_font,
                     v_text2)
     p_minus = Button("-", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 7 * top_pad + 5), button_font,
@@ -177,18 +182,19 @@ def lab_gui(font, width, height, top_pad, right_pad, d, p):
     save_button = Image_Button(width + right_pad/4, 11 * top_pad, save_image)
 
     # group buttons and text
-    buttons = Button_Collection([d_plus, d_minus, p_minus, p_plus, save_button])
+    buttons = Button_Collection([d_plus, d_minus, p_minus, p_plus])
     collection = Text_Collection([h_text, v_text1, v_text2])
-    return collection, buttons
+    return collection, buttons, save_button
 
 
 def draw_grid(screen, screen_width, screen_height, width, height, top_pad):
     """ Creates the height x width  grid of the labyrinth.
     Used when we start the program and every time we reset the labyrinth"""
+
     pygame.draw.rect(screen, (80, 80, 80), (0, top_pad, screen_width, screen_height))
     block = screen_width // width
-    pygame.draw.line(screen, (0, 0, 0), (0, top_pad), (screen_width, top_pad))
+    pygame.draw.line(screen, (0, 0, 0), (0, top_pad), (screen_width, top_pad), 2)
     for i in range(height - 1):
-        pygame.draw.line(screen, (0, 0, 0), (0, (i + 1) * block + top_pad), (screen_width, (i + 1) * block + top_pad))
+        pygame.draw.line(screen, (0, 0, 0), (0, (i + 1) * block + top_pad), (screen_width, (i + 1) * block + top_pad), 2)
     for j in range(width):
-        pygame.draw.line(screen, (0, 0, 0), ((j + 1) * block, top_pad), ((j + 1) * block, screen_height + top_pad))
+        pygame.draw.line(screen, (0, 0, 0), ((j + 1) * block, top_pad), ((j + 1) * block, screen_height + top_pad), 2)
