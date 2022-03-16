@@ -65,7 +65,32 @@ class Button:
         return False
 
 
-class Button_collection:
+class Image_Button:
+    def __init__(self, x, y, image):
+        self.x = x
+        self.y = y
+        self.image = image
+        self.rect = self.top_rect = pygame.Rect((x, y), (50, 50))
+        self.pressed = False
+
+    def draw(self, screen):
+        screen.blit(self.image, (self.x, self.y))
+
+    def check_click(self):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(*mouse_pos):
+            if pygame.mouse.get_pressed()[0]:
+                self.pressed = True
+            else:
+                if self.pressed:
+                    self.pressed = False
+                    return True
+        else:
+            pass
+        return False
+
+
+class Button_Collection:
     def __init__(self, buttons):
         self.buttons = buttons
 
@@ -118,7 +143,7 @@ def starting_gui(screen, font, width, top_pad, right_pad):
 
 
 def lab_gui(font, width, height, top_pad, right_pad, d, p):
-    button_font = lab_font = pygame.font.SysFont("sanscomic", 55)
+    button_font = pygame.font.SysFont("sanscomic", 55)
     horizontal_text = "space: restart labyrinth     R : reset the grid size"
     h_text = Text(font, (0, 0), width - 2 * right_pad, 50, horizontal_text, (0, 0, 0), (80, 80, 80))
 
@@ -130,9 +155,17 @@ def lab_gui(font, width, height, top_pad, right_pad, d, p):
 
     # p text and buttons
     vertical_text2 = f" p:{p}"
-    v_text2 = Changing_Text(font, (width + 1, 7 * top_pad), right_pad, 2 * top_pad, vertical_text2, (0, 0, 0), (80, 80, 80))
+    v_text2 = Changing_Text(font, (width + 1, 6 * top_pad), right_pad, top_pad, vertical_text2, (0, 0, 0), (80, 80, 80))
+    p_plus = Button("+", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 6 * top_pad - 50), button_font)
+    p_minus = Button("-", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 7 * top_pad + 5), button_font)
 
-    buttons = Button_collection([d_plus,d_minus])
+    # save image
+    save_image = pygame.image.load("save.png").convert_alpha()
+    save_image = pygame.transform.scale(save_image, (50, 50))
+    save_button = Image_Button(width + right_pad/4, 11 * top_pad, save_image)
+
+    # group buttons and text
+    buttons = Button_Collection([d_plus, d_minus, p_minus, p_plus, save_button])
     collection = Text_Collection([h_text, v_text1, v_text2])
     return collection, buttons
 

@@ -24,7 +24,7 @@ def main():
     lab_font = pygame.font.SysFont("sanscomic", 40)
     lab, width, height, block = None, None, None, None
     text_collection, buttons = lab_gui(lab_font, screen_width, screen_height, top_pad, right_pad,
-                              Node.same_direction, Node.propagate_chance)
+                                       Node.same_direction, Node.propagate_chance)
     terminate = False
 
     start_settings = False
@@ -32,6 +32,7 @@ def main():
         clock.tick(60)
         text_collection.draw(screen)
         buttons.draw(screen)
+        buttons.ckeck_click()
         if start_settings:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
