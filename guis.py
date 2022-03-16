@@ -1,4 +1,5 @@
 import pygame
+from algorithm import Node
 
 
 class Text:
@@ -21,8 +22,8 @@ class Text:
 
 
 class Changing_Text(Text):
-    def change_text(self, text):
-        self.text = text
+    def change_text(self, value):
+        self.text = f"{self.text[0]}:{value}"
 
 
 class Text_Collection:
@@ -38,10 +39,12 @@ class Text_Collection:
 class Button:
     """Creates the buttons for gui"""
 
-    def __init__(self, text, width, height, pos, font):
+    def __init__(self, text, width, height, pos, font, changing_text=None):
         self.top_rect = pygame.Rect(pos, (width, height))
         self.top_color = (160, 160, 160)
         self.pressed = False
+        self.changing_text = changing_text
+        self.text = text
 
         self.text_surf = font.render(text, True, (0, 0, 0))
         self.text_rect = self.text_surf.get_rect(center=self.top_rect.center)
@@ -58,6 +61,11 @@ class Button:
                 self.pressed = True
             else:
                 if self.pressed:
+                    if self.changing_text:
+                        if self.changing_text.text[0] == "p":
+                            self.changing_text.change_text(Node.change_propagate(self.text))
+                        else:
+                            self.changing_text.change_text(Node.change_direction(self.text))
                     self.pressed = False
                     return True
         else:
@@ -148,16 +156,20 @@ def lab_gui(font, width, height, top_pad, right_pad, d, p):
     h_text = Text(font, (0, 0), width - 2 * right_pad, 50, horizontal_text, (0, 0, 0), (80, 80, 80))
 
     # d text and buttons
-    vertical_text1 = f" d:{d}"
+    vertical_text1 = f"d:{d}"
     v_text1 = Changing_Text(font, (width + 1, 2 * top_pad), right_pad, top_pad, vertical_text1, (0, 0, 0), (80, 80, 80))
-    d_plus = Button("+", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 2 * top_pad - 50), button_font)
-    d_minus = Button("-", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 3 * top_pad + 5), button_font)
+    d_plus = Button("+", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 2 * top_pad - 50), button_font,
+                    v_text1)
+    d_minus = Button("-", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 3 * top_pad + 5), button_font,
+                     v_text1)
 
     # p text and buttons
-    vertical_text2 = f" p:{p}"
+    vertical_text2 = f"p:{p}"
     v_text2 = Changing_Text(font, (width + 1, 6 * top_pad), right_pad, top_pad, vertical_text2, (0, 0, 0), (80, 80, 80))
-    p_plus = Button("+", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 6 * top_pad - 50), button_font)
-    p_minus = Button("-", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 7 * top_pad + 5), button_font)
+    p_plus = Button("+", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 6 * top_pad - 50), button_font,
+                    v_text2)
+    p_minus = Button("-", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 7 * top_pad + 5), button_font,
+                     v_text2)
 
     # save image
     save_image = pygame.image.load("save.png").convert_alpha()
@@ -180,4 +192,3 @@ def draw_grid(screen, screen_width, screen_height, width, height, top_pad):
         pygame.draw.line(screen, (0, 0, 0), (0, (i + 1) * block + top_pad), (screen_width, (i + 1) * block + top_pad))
     for j in range(width):
         pygame.draw.line(screen, (0, 0, 0), ((j + 1) * block, top_pad), ((j + 1) * block, screen_height + top_pad))
-

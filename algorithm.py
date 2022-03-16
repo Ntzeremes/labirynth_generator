@@ -146,6 +146,35 @@ class Node:
 
         return [first_child]
 
+    @staticmethod
+    def change_propagate(sign):
+        if sign == "+":
+            Node.propagate_chance += 0.02
+            if Node.propagate_chance > 1:
+                Node.propagate_chance = 0
+        else:
+            Node.propagate_chance -= 0.02
+            if Node.propagate_chance < 0:
+                Node.propagate_chance = 1
+
+        Node.propagate_chance = round(Node.propagate_chance, 2)
+
+        return Node.propagate_chance
+
+    @staticmethod
+    def change_direction(sign):
+        if sign == "+":
+            Node.same_direction += 0.02
+            if Node.same_direction > 1:
+                Node.same_direction = 0
+        else:
+            Node.same_direction -= 0.02
+            if Node.same_direction < 0:
+                Node.same_direction = 1
+
+        Node.same_direction = round(Node.same_direction, 2)
+        return Node.same_direction
+
 
 class Labyrinth:
     """The class that creates the n x n grid of the labyrinth. Initially it is filled with None values, the path
@@ -205,7 +234,3 @@ class Labyrinth:
             children = current_node.children(self)
             if children:
                 current_nodes.extend(children)
-
-
-
-
