@@ -36,7 +36,7 @@ def main():
             buttons.draw(screen)
             save_button.draw(screen)
             buttons.ckeck_click()
-            save_button.check_click(lab.grid)
+            save_button.check_click(lab)
 
         if start_settings:
             for event in pygame.event.get():
@@ -54,6 +54,9 @@ def main():
                         lab.reset()
                         draw_grid(screen, screen_width, screen_height, width, height, top_pad)
                         pygame.display.flip()
+
+                    if event.key == pygame.K_r:
+                        start_settings = False
 
         # Gui to choose the grid size, at the start of the program or when reset
         if not start_settings:
@@ -73,7 +76,6 @@ def main():
                 terminate = True
 
         pygame.display.flip()
-
 
 
 if __name__ == "__main__":

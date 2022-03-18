@@ -29,6 +29,7 @@ class Changing_Text(Text):
 
 class Text_Collection:
     """Collection of text objects so that with one draw call, all texts in the collection can be drawn"""
+
     def __init__(self, texts):
         self.texts = texts
 
@@ -75,17 +76,19 @@ class Button:
 
 
 class Image_Button:
-    def __init__(self, x, y, image):
+    def __init__(self, x, y, image, width, height):
         self.x = x
         self.y = y
         self.image = image
         self.rect = self.top_rect = pygame.Rect((x, y), (50, 50))
         self.pressed = False
+        self.screen_width = width
+        self.screen_height = height
 
     def draw(self, screen):
         screen.blit(self.image, (self.x, self.y))
 
-    def check_click(self, grid=None):
+    def check_click(self, lab):
         mouse_pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(*mouse_pos):
             if pygame.mouse.get_pressed()[0]:
@@ -94,13 +97,45 @@ class Image_Button:
                 if self.pressed:
                     with open("labyrinth.txt", "w") as f:
                         writer = csv.writer(f)
-                        writer.writerows(grid)
+                        writer.writerows(lab.grid)
 
+                    self.save_image(self.screen_width, self.screen_height, lab)
                     self.pressed = False
                     return True
         else:
             pass
         return False
+
+    def save_image(self, screen_width, screen_height, lab):
+        from PIL import Image, ImageDraw
+
+        grid = lab.grid
+        height = len(grid)
+        width = len(grid[0])
+
+        block = screen_width // width
+
+        img = Image.new("RGBA", (screen_width, screen_height), "black")
+        cell_border = 2
+        draw = ImageDraw.Draw(img)
+
+        for i in range(height):
+            for j in range(width):
+                # path
+                if grid[i][j] == 0:
+                    fill = (175, 175, 175)
+                # walls
+                else:
+                    fill = (80, 80, 80)
+
+                # Draw cell
+                draw.rectangle(
+                    ([(j * block + cell_border, i * block + cell_border),
+                      ((j + 1) * block - cell_border, (i + 1) * block - cell_border)]),
+                    fill=fill
+                )
+
+        img.save("labyrinth.png")
 
 
 class Button_Collection:
@@ -163,23 +198,27 @@ def lab_gui(font, width, height, top_pad, right_pad, d, p):
     # d text and buttons
     vertical_text1 = f"d:{d}"
     v_text1 = Changing_Text(font, (width + 2, 2 * top_pad), right_pad, top_pad, vertical_text1, (0, 0, 0), (80, 80, 80))
-    d_plus = Button("+", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 2 * top_pad - 50), button_font,
+    d_plus = Button("+", right_pad / 2 - 10, right_pad / 2 - 10, (width + 5 + right_pad / 4, 2 * top_pad - 50),
+                    button_font,
                     v_text1)
-    d_minus = Button("-", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 3 * top_pad + 5), button_font,
+    d_minus = Button("-", right_pad / 2 - 10, right_pad / 2 - 10, (width + 5 + right_pad / 4, 3 * top_pad + 5),
+                     button_font,
                      v_text1)
 
     # p text and buttons
     vertical_text2 = f"p:{p}"
     v_text2 = Changing_Text(font, (width + 2, 6 * top_pad), right_pad, top_pad, vertical_text2, (0, 0, 0), (80, 80, 80))
-    p_plus = Button("+", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 6 * top_pad - 50), button_font,
+    p_plus = Button("+", right_pad / 2 - 10, right_pad / 2 - 10, (width + 5 + right_pad / 4, 6 * top_pad - 50),
+                    button_font,
                     v_text2)
-    p_minus = Button("-", right_pad/2 - 10, right_pad/2 - 10, (width + 5 + right_pad/4, 7 * top_pad + 5), button_font,
+    p_minus = Button("-", right_pad / 2 - 10, right_pad / 2 - 10, (width + 5 + right_pad / 4, 7 * top_pad + 5),
+                     button_font,
                      v_text2)
 
     # save image
     save_image = pygame.image.load("save.png").convert_alpha()
     save_image = pygame.transform.scale(save_image, (50, 50))
-    save_button = Image_Button(width + right_pad/4, 11 * top_pad, save_image)
+    save_button = Image_Button(width + right_pad / 4, 11 * top_pad, save_image, width, height)
 
     # group buttons and text
     buttons = Button_Collection([d_plus, d_minus, p_minus, p_plus])
@@ -195,6 +234,7 @@ def draw_grid(screen, screen_width, screen_height, width, height, top_pad):
     block = screen_width // width
     pygame.draw.line(screen, (0, 0, 0), (0, top_pad), (screen_width, top_pad), 2)
     for i in range(height - 1):
-        pygame.draw.line(screen, (0, 0, 0), (0, (i + 1) * block + top_pad), (screen_width, (i + 1) * block + top_pad), 2)
+        pygame.draw.line(screen, (0, 0, 0), (0, (i + 1) * block + top_pad), (screen_width, (i + 1) * block + top_pad),
+                         2)
     for j in range(width):
         pygame.draw.line(screen, (0, 0, 0), ((j + 1) * block, top_pad), ((j + 1) * block, screen_height + top_pad), 2)
